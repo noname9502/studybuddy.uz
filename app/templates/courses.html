@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Курсы — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline">← Назад</a>
+        <h1 style="margin: 0;">Все курсы</h1>
+    </div>
+
+    <div class="filter-bar">
+        <input type="text" id="course-search" placeholder="Поиск по названию..." value="{{ search or '' }}">
+        <select onchange="window.location.href='?category='+this.value+'&level={{ selected_level or '' }}&search={{ search or '' }}'">
+            <option value="">Все категории</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+        <select onchange="window.location.href='?category={{ selected_category or '' }}&level='+this.value+'&search={{ search or '' }}'">
+            <option value="">Все уровни</option>
+            <option value="beginner" {% if selected_level == 'beginner' %}selected{% endif %}>Начальный</option>
+            <option value="intermediate" {% if selected_level == 'intermediate' %}selected{% endif %}>Средний</option>
+            <option value="advanced" {% if selected_level == 'advanced' %}selected{% endif %}>Продвинутый</option>
+        </select>
+    </div>
+
+    <div class="courses-grid">
+        {% for course in courses %}
+        <div class="card course-card">
+            {% if course.thumbnail_url %}
+            <img src="{{ url_for('static', filename='uploads/thumbnails/' + course.thumbnail_url) }}" alt="{{ course.title }}" class="thumbnail">
+            {% else %}
+            <div class="thumbnail" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">Нет изображения</div>
+            {% endif %}
+            <div class="content">
+                <span class="category">{{ course.category }}</span>
+                <h3>{{ course.title }}</h3>
+                <p class="description">{{ course.description[:100] }}...</p>
+                <div class="meta">
+                    <span class="level">{{ course.level }}</span>
+                    <span class="stars">★ {{ course.lessons|selectattr('is_published')|list|length }} уроков</span>
+                </div>
+                <a href="{{ url_for('main.course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Смотреть курс</a>
+            </div>
+        </div>
+        {% else %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Курсов не найдено.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

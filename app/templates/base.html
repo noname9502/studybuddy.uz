@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StudyBuddy{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="{{ url_for('main.index') }}" class="logo">
+                <img src="https://static.thenounproject.com/png/1573170-200.png" alt="StudyBuddy" style="width: 28px; height: 28px; object-fit: contain; margin-right: 0.5rem;">
+                StudyBuddy
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.courses') }}">Курсы</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}">Админ панель</a>
+                    {% endif %}
+                    {% if current_user.role == 'mentor' %}
+                        <a href="{{ url_for('mentor.dashboard') }}">Кабинет ментора</a>
+                    {% endif %}
+                    {% if current_user.role == 'parent' %}
+                        <a href="{{ url_for('parent.dashboard') }}">Панель родителей</a>
+                    {% endif %}
+                    <a href="{{ url_for('main.profile') }}">Профиль</a>
+                    <a href="{{ url_for('auth.logout') }}">Выйти</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">Войти</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-sm">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container" style="margin-top: 1rem;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 StudyBuddy. Все права защищены.</p>
+        </div>
+    </footer>
+
+    {% if current_user.is_authenticated %}
+    <div class="ai-assistant-floating" id="aiAssistantFloating">
+        <button class="ai-assistant-btn" id="aiAssistantBtn">
+            <img src="https://cdn-icons-png.flaticon.com/512/10817/10817417.png" alt="AI Assistant" style="width: 40px; height: 40px; object-fit: contain;">
+        </button>
+        <div class="ai-assistant-chat" id="aiAssistantChat">
+            <div class="ai-assistant-header">
+                <h3>AI Ассистент</h3>
+                <button class="ai-assistant-close" id="aiAssistantClose">×</button>
+            </div>
+            <div class="chat-messages" id="floatingChatMessages">
+                <div class="chat-message ai">
+                    Привет! Я AI-ассистент StudyBuddy. Чем могу помочь сегодня?
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="floatingChatInput" placeholder="Напишите ваше сообщение..." autocomplete="off">
+                <button class="btn btn-primary btn-sm" id="floatingSendBtn">→</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        window.coursesData = {{ courses_for_ai | tojson | safe if courses_for_ai else '[]' }};
+    </script>
+    <script src="{{ url_for('static', filename='js/floating-chat.js') }}"></script>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

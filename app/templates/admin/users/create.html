@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Создать пользователя — StudyBuddy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div class="admin-header">
+        <h1>Создать пользователя</h1>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline">← Назад</a>
+    </div>
+
+    <div class="card">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username() }}
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="help-block">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email() }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <span class="help-block">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password() }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="help-block">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.role.label }}
+                {{ form.role() }}
+            </div>
+            <div class="form-group">
+                {{ form.is_active() }} {{ form.is_active.label }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

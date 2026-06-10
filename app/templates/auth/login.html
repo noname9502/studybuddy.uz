@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Войти — StudyBuddy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <h2>Войти</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email() }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <span class="help-block">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password() }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="help-block">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group checkbox-group">
+                {{ form.remember() }} {{ form.remember.label }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+        <div class="link">
+            <p>Нет аккаунта? <a href="{{ url_for('auth.signup') }}">Зарегистрируйтесь</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Вопрос №{{ question.id }} — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <p style="margin-bottom: 1rem;">
+        <a href="{{ url_for('mentor.questions') }}">← Вернуться к вопросам</a>
+    </p>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0;">Вопрос</h2>
+            <span style="padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.9rem; {{ 'background: #ffc107; color: #000;' if question.status == 'open' else 'background: #28a745; color: #fff;' }}">
+                {{ 'Ожидает ответа' if question.status == 'open' else 'Отвечено' }}
+            </span>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                Курс: {{ question.lesson.course.title }} | Урок: {{ question.lesson.title }}
+            </p>
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                Студент: {{ question.student.username }} | Задан: {{ question.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </p>
+        </div>
+
+        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <p style="font-size: 1.1rem;">{{ question.body }}</p>
+            {% if question.attachment_url %}
+            <p style="margin-top: 1rem;"><a href="{{ url_for('static', filename='uploads/attachments/' + question.attachment_url) }}" target="_blank" class="btn btn-outline btn-sm">📎 Посмотреть вложение</a></p>
+            {% endif %}
+        </div>
+
+        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; margin-bottom: 2rem;">
+            <h4 style="margin-bottom: 1rem;">Профиль студента</h4>
+            <p>Записан на {{ student_enrollments }} курсов</p>
+            <p>Пройдено уроков: {{ student_progress }}</p>
+        </div>
+
+        {% if question.answers %}
+        <div style="margin-bottom: 2rem;">
+            <h4 style="margin-bottom: 1rem;">Ответы</h4>
+            {% for answer in question.answers %}
+            <div class="card" style="margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                    <div class="avatar" style="background: #28a745;">{{ answer.mentor.username[0].upper() }}</div>
+                    <div>
+                        <div style="font-weight: bold;">{{ answer.mentor.username }}</div>
+                        <small style="color: var(--text-muted);">{{ answer.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                    </div>
+                </div>
+                <p>{{ answer.body }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if question.status == 'open' %}
+        <div>
+            <h4 style="margin-bottom: 1rem;">Написать ответ</h4>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.body.label }}
+                    {{ form.body(rows=5) }}
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

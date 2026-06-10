@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <p style="margin-bottom: 1rem;">
+        <a href="{{ url_for('main.courses') }}" class="btn btn-outline">← Назад</a>
+    </p>
+    <div class="course-header">
+        {% if course.thumbnail_url %}
+        <img src="{{ url_for('static', filename='uploads/thumbnails/' + course.thumbnail_url) }}" alt="{{ course.title }}" class="thumbnail">
+        {% else %}
+        <div class="thumbnail" style="display: flex; align-items: center; justify-content: center; background: var(--border); border-radius: var(--radius); color: var(--text-muted);">Нет изображения</div>
+        {% endif %}
+        <div>
+            <span class="category">{{ course.category }}</span>
+            <h1 style="margin: 0.5rem 0;">{{ course.title }}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">{{ course.description }}</p>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <span class="level">{{ course.level }}</span>
+                <span>{{ course.lessons|selectattr('is_published')|list|length }} уроков</span>
+                <span class="stars">★ {{ avg_rating }}</span>
+            </div>
+            {% if current_user.is_authenticated %}
+                {% if is_enrolled %}
+                <span class="btn btn-accent">Записан ✓</span>
+                {% else %}
+                <form method="POST" action="{{ url_for('main.enroll', course_id=course.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">Записаться</button>
+                </form>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('auth.login', next=url_for('main.course_detail', course_id=course.id)) }}" class="btn btn-primary">Войдите, чтобы записаться</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="lessons-list">
+        <h2 style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);">Уроки курса</h2>
+        {% for lesson in course.lessons if lesson.is_published %}
+        <div class="lesson-item">
+            <div class="title">
+                {% if is_enrolled and progress_data.get(lesson.id) %}
+                <span class="check">✓</span>
+                {% elif not is_enrolled %}
+                <span>🔒</span>
+                {% endif %}
+                <span>{{ loop.index }}. {{ lesson.title }}</span>
+                {% if lesson.duration %}
+                <span style="color: var(--text-muted);">({{ lesson.duration // 60 }} мин)</span>
+                {% endif %}
+            </div>
+            {% if is_enrolled %}
+            <a href="{{ url_for('main.lesson', lesson_id=lesson.id) }}" class="btn btn-primary btn-sm">Смотреть</a>
+            {% else %}
+            <span style="color: var(--text-muted);">Запишитесь на курс</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+.auth-container {
+    max-width: 400px;
+    margin: 4rem auto;
+}
+
+.auth-card {
+    padding: 2rem;
+}
+
+.auth-card h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-card .btn {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.auth-card .link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.auth-card .link a {
+    color: var(--primary);
+}

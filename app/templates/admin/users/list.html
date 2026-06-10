@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями — StudyBuddy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div class="admin-header">
+        <h1>Пользователи</h1>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">← Назад</a>
+            <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">+ Создать пользователя</a>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <input type="text" name="search" placeholder="Поиск по имени/email..." value="{{ search or '' }}" form="filter-form">
+        <select name="role" form="filter-form">
+            <option value="">Все роли</option>
+            <option value="student" {{ 'selected' if role == 'student' else '' }}>Студент</option>
+            <option value="admin" {{ 'selected' if role == 'admin' else '' }}>Администратор</option>
+            <option value="mentor" {{ 'selected' if role == 'mentor' else '' }}>Ментор</option>
+            <option value="parent" {{ 'selected' if role == 'parent' else '' }}>Родитель</option>
+        </select>
+        <select name="status" form="filter-form">
+            <option value="">Все статусы</option>
+            <option value="active" {{ 'selected' if status == 'active' else '' }}>Активные</option>
+            <option value="inactive" {{ 'selected' if status == 'inactive' else '' }}>Деактивированные</option>
+        </select>
+        <form id="filter-form" method="GET" style="display: contents;">
+            <button type="submit" class="btn btn-primary">Применить</button>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-outline">Сбросить</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <a href="{{ url_for('admin.users', search=search, role=role, status=status, sort='id', dir='desc' if sort_by != 'id' or sort_dir == 'asc' else 'asc') }}">
+                        ID {% if sort_by == 'id' %}↓{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.users', search=search, role=role, status=status, sort='username', dir='desc' if sort_by != 'username' or sort_dir == 'asc' else 'asc') }}">
+                        Имя пользователя {% if sort_by == 'username' %}↓{% endif %}
+                    </a>
+                </th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th>
+                    <a href="{{ url_for('admin.users', search=search, role=role, status=status, sort='created_at', dir='desc' if sort_by != 'created_at' or sort_dir == 'asc' else 'asc') }}">
+                        Присоединился {% if sort_by == 'created_at' %}↓{% endif %}
+                    </a>
+                </th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ 'Администратор' if user.role == 'admin' else 'Ментор' if user.role == 'mentor' else 'Родитель' if user.role == 'parent' else 'Студент' }}</td>
+                <td>
+                    <span class="status-badge {{ 'active' if user.is_active else 'inactive' }}">
+                        {{ 'Активен' if user.is_active else 'Деактивирован' }}
+                    </span>
+                </td>
+                <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline btn-sm">Редактировать</a>
+                    {% if user.id != current_user.id %}
+                    <button class="btn-delete-modal btn btn-danger btn-sm" data-url="{{ url_for('admin.delete_user', user_id=user.id) }}">Удалить</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    Пользователей не найдено
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.users', page=pagination.prev_num, search=search, role=role, status=status, sort=sort_by, dir=sort_dir) }}">&laquo;</a>
+        {% else %}
+        <span class="disabled">&laquo;</span>
+        {% endif %}
+        
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                <span class="active">{{ page_num }}</span>
+                {% else %}
+                <a href="{{ url_for('admin.users', page=page_num, search=search, role=role, status=status, sort=sort_by, dir=sort_dir) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+            <span>...</span>
+            {% endif %}
+        {% endfor %}
+        
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.users', page=pagination.next_num, search=search, role=role, status=status, sort=sort_by, dir=sort_dir) }}">&raquo;</a>
+        {% else %}
+        <span class="disabled">&raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<div id="delete-modal" class="modal-overlay hidden">
+    <div class="modal">
+        <h3>Подтвердите удаление</h3>
+        <p>Вы уверены, что хотите удалить этого пользователя?</p>
+        <form id="delete-form" method="POST">
+            <div class="actions">
+                <button type="button" id="cancel-delete" class="btn btn-outline">Отмена</button>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

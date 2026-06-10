@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}AI Ассистент - StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <h1 style="margin-bottom: 1.5rem;">AI Ассистент StudyBuddy</h1>
+    <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Задайте мне любой вопрос или попросите порекомендовать подходящие курсы!</p>
+    
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message ai">
+                Привет! Я AI-ассистент StudyBuddy. Чем могу помочь сегодня? Я могу ответить на ваши вопросы или порекомендовать подходящие курсы на основе ваших интересов, целей и навыков.
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Напишите ваше сообщение..." autocomplete="off">
+            <button class="btn btn-primary" id="sendBtn">Отправить</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.puter.com/v2/"></script>
+<script>
+    window.coursesData = {{ courses | tojson | safe if courses else '[]' }};
+</script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

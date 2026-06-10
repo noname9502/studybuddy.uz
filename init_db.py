@@ -1,0 +1,11 @@
+from app import create_app
+from app.extensions import db
+from app.models import User, Course, Lesson, Enrollment, Comment, Rating, Question, Answer, MentorCourse
+from seed import seed
+
+if __name__ == '__main__':
+    app = create_app()
+    with app.app_context():
+        db.create_all()
+        print("All tables created!")
+        seed()

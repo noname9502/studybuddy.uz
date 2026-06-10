@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <p style="margin-bottom: 1rem;">
+        <a href="{{ url_for('main.course_detail', course_id=course.id) }}">← {{ course.title }}</a>
+    </p>
+    <h1 style="margin-bottom: 1rem;">{{ lesson.title }}</h1>
+
+    <div class="video-container">
+        <video id="lesson-video" controls>
+            <source src="{{ url_for('static', filename='uploads/videos/' + lesson.video_url) }}" type="video/mp4">
+            Ваш браузер не поддерживает видео.
+        </video>
+    </div>
+
+    {% if lesson.description %}
+    <div class="card" style="margin-bottom: 2rem;">
+        <p>{{ lesson.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="rating-section">
+        <h3>Оценка урока</h3>
+        <p>Средняя оценка: <span id="avg-rating">{{ avg_rating }}</span> (всего <span id="total-ratings">{{ lesson.ratings|length }}</span>)</p>
+        <div id="rating-widget" class="rating-widget">
+            <span class="star" data-score="1">★</span>
+            <span class="star" data-score="2">★</span>
+            <span class="star" data-score="3">★</span>
+            <span class="star" data-score="4">★</span>
+            <span class="star" data-score="5">★</span>
+        </div>
+    </div>
+
+    <div class="comments-section">
+        <h3>Комментарии ({{ lesson.comments|selectattr('is_visible')|list|length }})</h3>
+
+        {% if current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('main.post_comment', lesson_id=lesson.id) }}" class="card" style="margin-bottom: 2rem;">
+            {{ comment_form.hidden_tag() }}
+            <div class="form-group">
+                {{ comment_form.body.label }}
+                {{ comment_form.body(rows=3) }}
+            </div>
+            {{ comment_form.submit(class="btn btn-primary") }}
+        </form>
+        {% else %}
+        <p style="margin-bottom: 2rem;"><a href="{{ url_for('auth.login', next=url_for('main.lesson', lesson_id=lesson.id)) }}">Войдите</a>, чтобы оставить комментарий.</p>
+        {% endif %}
+
+        {% for comment in lesson.comments if comment.is_visible and comment.user %}
+        <div class="comment">
+            <div class="header">
+                <div class="avatar">{{ comment.user.username[0].upper() }}</div>
+                <span class="username">{{ comment.user.username }}</span>
+                <span class="date">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <p>{{ comment.body }}</p>
+        </div>
+        {% else %}
+        <p>Пока нет комментариев.</p>
+        {% endfor %}
+    </div>
+
+    <div class="questions-section" style="margin-top: 3rem;">
+        <h3>❓ Вопросы ментору ({{ questions|length }})</h3>
+
+        {% if current_user.is_authenticated %}
+            <form method="POST" action="{{ url_for('main.ask_question', lesson_id=lesson.id) }}" class="card" style="margin-bottom: 2rem;" enctype="multipart/form-data">
+                {{ ask_question_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ ask_question_form.body.label }}
+                    {{ ask_question_form.body(rows=3) }}
+                </div>
+                <div class="form-group">
+                    {{ ask_question_form.attachment.label }}
+                    {{ ask_question_form.attachment() }}
+                </div>
+                {{ ask_question_form.submit(class="btn btn-primary") }}
+            </form>
+        {% else %}
+        <p style="margin-bottom: 2rem;"><a href="{{ url_for('auth.login', next=url_for('main.lesson', lesson_id=lesson.id)) }}">Войдите</a>, чтобы задать вопрос ментору.</p>
+        {% endif %}
+
+        {% for question in questions %}
+        <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="avatar">{{ question.student.username[0].upper() }}</div>
+                    <span style="font-weight: bold;">{{ question.student.username }}</span>
+                    <span style="color: #666; font-size: 0.9rem;">{{ question.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+                <span style="padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.85rem; {{ 'background: #ffc107; color: #000;' if question.status == 'open' else 'background: #28a745; color: #fff;' }}">
+                    {{ 'Ожидает ответа' if question.status == 'open' else 'Отвечено' }}
+                </span>
+            </div>
+            <p>{{ question.body }}</p>
+            {% if question.attachment_url %}
+            <p><a href="{{ url_for('static', filename='uploads/attachments/' + question.attachment_url) }}" target="_blank">📎 Посмотреть вложение</a></p>
+            {% endif %}
+            
+            {% if question.answers %}
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                {% for answer in question.answers %}
+                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <div class="avatar" style="background: #28a745;">{{ answer.mentor.username[0].upper() }}</div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 0.25rem;">
+                            {{ answer.mentor.username }} (ментор)
+                            <span style="color: #666; font-size: 0.85rem; font-weight: normal;">{{ answer.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        <p>{{ answer.body }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p>Пока нет вопросов.</p>
+        {% endfor %}
+    </div>
+
+    <div class="lesson-nav">
+        {% if prev_lesson %}
+        <a href="{{ url_for('main.lesson', lesson_id=prev_lesson.id) }}" class="btn btn-outline">← Предыдущий урок</a>
+        {% else %}
+        <div></div>
+        {% endif %}
+        {% if next_lesson %}
+        <a href="{{ url_for('main.lesson', lesson_id=next_lesson.id) }}" class="btn btn-primary">Следующий урок →</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    window.LESSON_ID = {{ lesson.id }};
+    window.USER_RATING = {{ user_rating.score if user_rating else 0 }};
+    window.LESSON_WATCHED = {{ user_progress.watched|lower if user_progress else 'false' }};
+</script>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+<script src="{{ url_for('static', filename='js/rating.js') }}"></script>
+{% endblock %}

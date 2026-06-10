@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div class="profile-header">
+        <div class="avatar">{{ current_user.username[0].upper() }}</div>
+        <div>
+            <h1>{{ current_user.username }}</h1>
+            <p>{{ current_user.email }}</p>
+            <p style="color: var(--text-muted);">Присоединился: {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom: 1.5rem;">Мои курсы</h2>
+    <div class="courses-grid" style="margin-bottom: 3rem;">
+        {% for item in courses_progress %}
+        <div class="card course-card">
+            {% if item.course.thumbnail_url %}
+            <img src="{{ url_for('static', filename='uploads/thumbnails/' + item.course.thumbnail_url) }}" alt="{{ item.course.title }}" class="thumbnail">
+            {% else %}
+            <div class="thumbnail" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">Нет изображения</div>
+            {% endif %}
+            <div class="content">
+                <h3>{{ item.course.title }}</h3>
+                <div class="progress-bar" style="margin: 1rem 0;">
+                    <div class="fill" style="width: {{ item.progress }}%;"></div>
+                </div>
+                <p style="color: var(--text-muted);">{{ item.progress }}% выполнено</p>
+                <a href="{{ url_for('main.course_detail', course_id=item.course.id) }}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Продолжить</a>
+            </div>
+        </div>
+        {% else %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Вы еще не записаны ни на один курс.</p>
+        {% endfor %}
+    </div>
+
+    {% if recent_progress %}
+    <h2 style="margin-bottom: 1.5rem;">Недавно просмотренные</h2>
+    <div class="card">
+        {% for prog in recent_progress %}
+        <div class="lesson-item">
+            <div class="title">
+                <span class="check">✓</span>
+                <span>{{ prog.lesson.title }}</span>
+                <span style="color: var(--text-muted);">({{ prog.lesson.course.title }})</span>
+            </div>
+            <a href="{{ url_for('main.lesson', lesson_id=prog.lesson.id) }}" class="btn btn-primary btn-sm">Смотреть снова</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

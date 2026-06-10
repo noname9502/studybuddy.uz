@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Связать ребенка — StudyBuddy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div class="admin-header">
+        <h1>Связать ребенка</h1>
+        <a href="{{ url_for('parent.dashboard') }}" class="btn btn-outline btn-sm">← Назад</a>
+    </div>
+
+    <div class="card" style="margin-top: 2rem; max-width: 500px;">
+        <form method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label for="child_email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email ребенка</label>
+                <input type="email" id="child_email" name="child_email" class="form-control" required placeholder="Введите email ребенка">
+            </div>
+            <button type="submit" class="btn btn-primary">Связать аккаунт</button>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem; max-width: 500px;">
+        <h3 style="margin-bottom: 1rem;">Как это работает?</h3>
+        <ol style="color: var(--text-muted); line-height: 1.75;">
+            <li>У вашего ребенка должен быть аккаунт в StudyBuddy</li>
+            <li>Введите email, который ваш ребенок использует для входа</li>
+            <li>После подтверждения вы сможете видеть его прогресс</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
